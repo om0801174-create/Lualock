@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import {
   Activity,
+  ArrowRight,
   ArrowUpRight,
   Blocks,
   Check,
@@ -49,6 +50,8 @@ const chartPoints = "0,135 43,126 86,126 129,116 172,121 215,101 258,108 301,91 
 const chartFill = `0,135 ${chartPoints} 645,158 0,158`;
 
 export default function Home() {
+  const [view, setView] = useState<"landing" | "auth" | "dashboard">("landing");
+  const [authMode, setAuthMode] = useState<"login" | "signup">("signup");
   const [activeNav, setActiveNav] = useState("Overview");
   const [projects, setProjects] = useState(initialProjects);
   const [query, setQuery] = useState("");
@@ -59,12 +62,26 @@ export default function Home() {
   const [script, setScript] = useState("-- LuaLock protection preview\nlocal function greet(name)\n  return 'Hello, ' .. name\nend\n\nprint(greet('world'))");
   const [minify, setMinify] = useState(true);
   const [watermark, setWatermark] = useState(true);
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authName, setAuthName] = useState("");
 
   const filteredProjects = useMemo(() => projects.filter((project) => `${project.name} ${project.description}`.toLowerCase().includes(query.toLowerCase())), [projects, query]);
 
   function showToast(message: string) {
     setToast(message);
     window.setTimeout(() => setToast(null), 3200);
+  }
+
+  function openAuth(mode: "login" | "signup") {
+    setAuthMode(mode);
+    setView("auth");
+  }
+
+  function finishAuth(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setView("dashboard");
+    showToast(authMode === "signup" ? "Workspace created" : "Signed in successfully");
   }
 
   function createProject() {
@@ -76,8 +93,8 @@ export default function Home() {
     showToast(`${name} created`);
   }
 
-  function openProtect(project: Project) {
-    setSelectedProject(project);
+  function openProtect(project?: Project) {
+    setSelectedProject(project ?? null);
     setModal("protect");
   }
 
@@ -94,6 +111,9 @@ export default function Home() {
     showToast(`${name} copied`);
   }
 
+  if (view === "landing") return <LandingPage onLogin={() => openAuth("login")} onSignup={() => openAuth("signup")} />;
+  if (view === "auth") return <AuthPage mode={authMode} name={authName} email={authEmail} password={authPassword} onNameChange={setAuthName} onEmailChange={setAuthEmail} onPasswordChange={setAuthPassword} onSubmit={finishAuth} onModeChange={setAuthMode} onBack={() => setView("landing")} />;
+
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -106,27 +126,16 @@ export default function Home() {
         <div className="side-spacer" />
         <div className="usage-card"><div className="usage-title"><span>MONTHLY USAGE</span><span>68%</span></div><div className="usage-bar"><span /></div><div className="usage-note">6,842 / 10,000 requests</div><button onClick={() => showToast("Usage details opened")}>View usage <ArrowUpRight size={11} /></button></div>
         <button className="nav-item settings" onClick={() => { setActiveNav("Settings"); showToast("Settings is ready for your workspace"); }}><Settings size={15} strokeWidth={1.8} /><span>Settings</span></button>
-        <div className="side-user"><span className="user-avatar">L</span><span><strong>lualock</strong><small>Owner</small></span><MoreHorizontal size={15} /></div>
+        <button className="side-user" onClick={() => { setView("landing"); showToast("Signed out"); }}><span className="user-avatar">L</span><span><strong>lualock</strong><small>Sign out</small></span><MoreHorizontal size={15} /></button>
       </aside>
 
       <main className="main-content">
         <header className="topbar"><div className="breadcrumbs"><span>Workspace</span><ChevronRight size={12} /><strong>{activeNav}</strong></div><div className="top-actions"><span className="status-live"><span /> All systems operational</span><button className="icon-button" onClick={() => showToast("Command palette coming soon")}><Terminal size={16} /></button><button className="help-button" onClick={() => showToast("LuaLock help center coming soon")}>?</button></div></header>
         <div className="content-wrap">
           <section className="page-heading"><div><div className="eyebrow"><span className="pulse" /> LUA PROTECTION PLATFORM</div><h1>Welcome back, <em>lualock</em></h1><p>Protect, deploy, and manage your scripts with confidence.</p></div><button className="primary-button" onClick={() => setModal("new")}><Plus size={14} /> New project</button></section>
-          <section className="stats-grid">
-            <StatCard icon={Blocks} tone="purple" label="TOTAL PROJECTS" value={projects.length.toString()} note="+2 this month" trend />
-            <StatCard icon={ShieldCheck} tone="green" label="PROTECTED BUILDS" value="1,284" note="+18.4% from last month" trend />
-            <StatCard icon={Activity} tone="blue" label="API REQUESTS" value="6,842" note="+12.7% from last month" trend />
-            <StatCard icon={Zap} tone="amber" label="AVG. PROTECTION TIME" value="1.8s" note="↓ 0.3s faster than last week" />
-          </section>
-
-          <section id="projects"><div className="section-heading"><div><h2>Your projects</h2><p>Manage and protect your Lua scripts.</p></div><button className="text-button" onClick={() => setQuery("")}>View all <ArrowUpRight size={12} /></button></div>
-            <div className="projects-card"><div className="projects-toolbar"><div className="toolbar-title"><span className="green-line" /><strong>All projects</strong><span className="count-pill">{projects.length}</span></div><div className="toolbar-actions"><label className="search-box"><Search size={13} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search projects..." /></label><button className="filter-button" onClick={() => showToast("Showing every project")}><Menu size={13} /> Filter</button></div></div>
-              <div className="project-list">{filteredProjects.length ? filteredProjects.map((project) => <ProjectRow key={project.name} project={project} onProtect={() => openProtect(project)} onCopy={() => copyProjectName(project.name)} />) : <div className="empty-state">No projects match “{query}”.</div>}</div>
-            </div>
-          </section>
-
-          <div className="bottom-grid"><section className="activity-card"><div className="card-heading"><div><h2>Protection activity</h2><p>Requests processed over the last 7 days.</p></div><button className="dots" onClick={() => showToast("Activity options opened")}><MoreHorizontal size={16} /></button></div><ActivityChart /></section><section className="quick-card"><div className="card-heading"><div><h2>Quick actions</h2><p>Common tasks, one click away.</p></div><Sparkles className="sparkle" size={15} /></div><QuickAction icon={FileCode2} tone="purple" title="Protect a script" description="Obfuscate and secure your Lua code" onClick={() => setModal("protect")} /><QuickAction icon={Upload} tone="blue" title="Upload project" description="Import an existing project" onClick={() => showToast("Upload picker opened")} /><QuickAction icon={Code2} tone="green" title="API documentation" description="Integrate LuaLock into your workflow" onClick={() => showToast("API docs opened")} /></section></div>
+          <section className="stats-grid"><StatCard icon={Blocks} tone="purple" label="TOTAL PROJECTS" value={projects.length.toString()} note="+2 this month" trend /><StatCard icon={ShieldCheck} tone="green" label="PROTECTED BUILDS" value="1,284" note="+18.4% from last month" trend /><StatCard icon={Activity} tone="blue" label="API REQUESTS" value="6,842" note="+12.7% from last month" trend /><StatCard icon={Zap} tone="amber" label="AVG. PROTECTION TIME" value="1.8s" note="↓ 0.3s faster than last week" /></section>
+          <section id="projects"><div className="section-heading"><div><h2>Your projects</h2><p>Manage and protect your Lua scripts.</p></div><button className="text-button" onClick={() => setQuery('')}>View all <ArrowUpRight size={12} /></button></div><div className="projects-card"><div className="projects-toolbar"><div className="toolbar-title"><span className="green-line" /><strong>All projects</strong><span className="count-pill">{projects.length}</span></div><div className="toolbar-actions"><label className="search-box"><Search size={13} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search projects..." /></label><button className="filter-button" onClick={() => showToast('Showing every project')}><Menu size={13} /> Filter</button></div></div><div className="project-list">{filteredProjects.length ? filteredProjects.map((project) => <ProjectRow key={project.name} project={project} onProtect={() => openProtect(project)} onCopy={() => copyProjectName(project.name)} />) : <div className="empty-state">No projects match &quot;{query}&quot;.</div>}</div></div></section>
+          <div className="bottom-grid"><section className="activity-card"><div className="card-heading"><div><h2>Protection activity</h2><p>Requests processed over the last 7 days.</p></div><button className="dots" onClick={() => showToast("Activity options opened")}><MoreHorizontal size={16} /></button></div><ActivityChart /></section><section className="quick-card"><div className="card-heading"><div><h2>Quick actions</h2><p>Common tasks, one click away.</p></div><Sparkles className="sparkle" size={15} /></div><QuickAction icon={FileCode2} tone="purple" title="Protect a script" description="Obfuscate and secure your Lua code" onClick={() => openProtect()} /><QuickAction icon={Upload} tone="blue" title="Upload project" description="Import an existing project" onClick={() => showToast("Upload picker opened")} /><QuickAction icon={Code2} tone="green" title="API documentation" description="Integrate LuaLock into your workflow" onClick={() => showToast("API docs opened")} /></section></div>
         </div>
       </main>
 
@@ -137,6 +146,15 @@ export default function Home() {
   );
 }
 
+function LandingPage({ onLogin, onSignup }: { onLogin: () => void; onSignup: () => void }) {
+  return <main className="landing-page"><nav className="landing-nav"><a className="brand landing-brand" href="#top"><span className="brand-mark"><LockKeyhole size={15} strokeWidth={2.5} /></span><span>LuaLock</span></a><div className="landing-links"><a href="#features">Features</a><a href="#developers">Developers</a><a href="#security">Security</a></div><div className="landing-actions"><button className="landing-login" onClick={onLogin}>Log in</button><button className="landing-signup" onClick={onSignup}>Get started <ArrowRight size={14} /></button></div></nav><section id="top" className="hero-section"><div className="hero-copy"><div className="eyebrow"><span className="pulse" /> SCRIPT SECURITY FOR BUILDERS</div><h1>Keep your code<br /><span>locked in.</span></h1><p>LuaLock protects, packages, and deploys Lua and Luau scripts from one clean workspace. Ship your work without handing over the source.</p><div className="hero-actions"><button className="landing-cta" onClick={onSignup}>Start protecting <ArrowRight size={15} /></button><button className="hero-secondary" onClick={onLogin}>I already have an account</button></div><div className="hero-proof"><span><Check size={12} /> Built for Lua + Luau</span><span><Check size={12} /> Signed releases</span><span><Check size={12} /> Supabase ready</span></div></div><div className="hero-terminal"><div className="terminal-bar"><span><i /> <i /> <i /></span><small>lualock / protect</small><span className="terminal-status">● secure</span></div><div className="terminal-code"><span className="code-muted">-- protect your release</span><br /><span><b>local</b> release = <i>LuaLock</i>.protect({`{`}</span><br /><span className="indent">script = <em>{`"main.lua"`}</em>,</span><br /><span className="indent">watermark = <em>true</em>,</span><br /><span className="indent">sign = <em>true</em></span><br /><span>{`}`})</span><br /><br /><span className="code-muted">-- status</span><br /><span className="code-green">✓ release locked · ready to ship</span><span className="cursor" /></div><div className="terminal-footer"><span><ShieldCheck size={12} /> source stays private</span><span>v1.0.0</span></div></div></section><section id="features" className="feature-section"><div className="section-kicker">WHY LUALOCK</div><h2>The control layer for your scripts.</h2><div className="feature-grid"><Feature icon={ShieldCheck} title="Protect releases" text="Obfuscation, watermarking, and signed builds in one repeatable flow." /><Feature icon={GitBranch} title="Deploy with control" text="Create versioned releases and revoke access when something changes." /><Feature icon={KeyRound} title="Keep secrets server-side" text="Use scoped keys and a clean API boundary instead of shipping credentials." /></div></section><section id="developers" className="developer-section"><div><div className="section-kicker">FOR DEVELOPERS</div><h2>One API. A calmer release process.</h2><p>Wire LuaLock into your build pipeline when you are ready. The dashboard stays simple; your automation can stay powerful.</p><button className="outline-cta" onClick={onSignup}>Open the workspace <ArrowUpRight size={14} /></button></div><div className="api-card"><span>POST</span><code>/api/v1/protect</code><small>Bearer token · signed request</small><div className="api-line" /><code className="api-response">{`{ status: protected, release: v1.0.0 }`}</code></div></section><footer className="landing-footer"><span className="brand"><span className="brand-mark"><LockKeyhole size={15} /></span><span>LuaLock</span></span><span>Protect what you build.</span><span id="security">© 2026 LuaLock</span></footer></main>;
+}
+
+function AuthPage({ mode, name, email, password, onNameChange, onEmailChange, onPasswordChange, onSubmit, onModeChange, onBack }: { mode: "login" | "signup"; name: string; email: string; password: string; onNameChange: (value: string) => void; onEmailChange: (value: string) => void; onPasswordChange: (value: string) => void; onSubmit: (event: React.FormEvent<HTMLFormElement>) => void; onModeChange: (mode: "login" | "signup") => void; onBack: () => void }) {
+  return <main className="auth-page"><div className="auth-glow auth-glow-one" /><div className="auth-glow auth-glow-two" /><nav className="auth-nav"><button className="brand auth-brand" onClick={onBack}><span className="brand-mark"><LockKeyhole size={15} /></span><span>LuaLock</span></button><button className="back-link" onClick={onBack}><ChevronRight size={14} className="back-arrow" /> Back to home</button></nav><div className="auth-layout"><div className="auth-rail"><div className="section-kicker">PRIVATE WORKSPACE</div><h1>{mode === "signup" ? "Your scripts,\nunder lock." : "Welcome\nback."}</h1><p>{mode === "signup" ? "Create a workspace for protected releases, deployments, and API access." : "Pick up where you left off and keep your release pipeline moving."}</p><div className="auth-rail-points"><span><ShieldCheck size={14} /> signed protection jobs</span><span><GitBranch size={14} /> versioned deployments</span><span><Zap size={14} /> fast API workflow</span></div></div><form className="auth-card" onSubmit={onSubmit}><div className="auth-card-head"><div className="modal-icon"><LockKeyhole size={17} /></div><div><h2>{mode === "signup" ? "Create your account" : "Log in to LuaLock"}</h2><p>{mode === "signup" ? "Start with a free workspace." : "Your dashboard is one step away."}</p></div></div>{mode === "signup" ? <label>Display name<input required value={name} onChange={(event) => onNameChange(event.target.value)} placeholder="e.g. lualock" /></label> : null}<label>Email address<input required type="email" value={email} onChange={(event) => onEmailChange(event.target.value)} placeholder="you@example.com" /></label><label>Password<input required minLength={8} type="password" value={password} onChange={(event) => onPasswordChange(event.target.value)} placeholder="At least 8 characters" /></label><button className="landing-cta auth-submit" type="submit">{mode === "signup" ? "Create workspace" : "Log in"} <ArrowRight size={15} /></button><div className="auth-switch">{mode === "signup" ? "Already have an account?" : "New to LuaLock?"}<button type="button" onClick={() => onModeChange(mode === "signup" ? "login" : "signup")}>{mode === "signup" ? "Log in" : "Create an account"}</button></div><small className="auth-disclaimer">By continuing, you agree to use LuaLock to protect scripts you own or have permission to manage.</small></form></div></main>;
+}
+
+function Feature({ icon: Icon, title, text }: { icon: typeof ShieldCheck; title: string; text: string }) { return <article className="feature-card"><span className="feature-icon"><Icon size={17} /></span><h3>{title}</h3><p>{text}</p></article>; }
 function StatCard({ icon: Icon, tone, label, value, note, trend = false }: { icon: typeof Gauge; tone: string; label: string; value: string; note: string; trend?: boolean }) { return <div className="stat-card"><span className={`stat-icon ${tone}`}><Icon size={16} /></span><div><span className="stat-label">{label}</span><strong>{value}</strong><small>{trend ? <span className="up">↗</span> : null}{note}</small></div></div>; }
 function ProjectRow({ project, onProtect, onCopy }: { project: Project; onProtect: () => void; onCopy: () => void }) { const Icon = project.language === "Luau" ? FileCode2 : Code2; return <div className="project-row"><span className={`file-icon ${project.icon}`}><Icon size={16} /></span><div className="project-info"><strong>{project.name}</strong><span>{project.description}</span></div><span className="language">{project.language}</span><span className="updated">{project.updated}</span><span className={`badge ${project.status === "Draft" ? "badge-gray" : project.status === "Processing" ? "badge-amber" : ""}`}><span className="badge-dot" />{project.status}</span><button className="row-action" onClick={onProtect}><LockKeyhole size={12} /> Protect</button><button className="icon-button" aria-label={`Copy ${project.name}`} onClick={onCopy}><Copy size={13} /></button></div>; }
 function ActivityChart() { return <div className="chart"><div className="y-labels"><span>2k</span><span>1.5k</span><span>1k</span><span>500</span><span>0</span></div><div className="chart-area"><div className="grid-lines"><i /><i /><i /><i /><i /></div><svg viewBox="0 0 645 158" preserveAspectRatio="none" aria-label="Protection activity chart"><defs><linearGradient id="chart-fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#b7f36d" stopOpacity=".2" /><stop offset="1" stopColor="#b7f36d" stopOpacity="0" /></linearGradient></defs><polygon points={chartFill} fill="url(#chart-fill)" /><polyline points={chartPoints} fill="none" stroke="#b7f36d" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" /></svg><div className="x-labels"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div></div></div>; }
