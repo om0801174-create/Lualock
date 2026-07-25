@@ -11,7 +11,7 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const projectId = typeof body?.projectId === "string" ? body.projectId : "";
   const source = typeof body?.source === "string" ? body.source : "";
-  const method = typeof body?.method === "string" && body.method.trim() ? body.method.trim() : "default";
+  const method = typeof body?.method === "string" && body.method.trim() ? body.method.trim() : "bytestrings,transformnums,minify";
   const options = body?.options && typeof body.options === "object" ? body.options : {};
   if (!projectId || !source.trim()) return NextResponse.json({ error: "Project and source code are required." }, { status: 400 });
   const { data: project } = await supabase.from("projects").select("id").eq("id", projectId).eq("owner_id", user.id).maybeSingle();
