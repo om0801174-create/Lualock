@@ -21,7 +21,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 MOPSFL_API_KEY=optional-server-side-key
 ```
 
-The schema includes projects, deployments, protection jobs, and API-key storage with row-level security. The browser dashboard currently uses demo data so the visual product can be reviewed before wiring authentication and database reads.
+The schema includes projects, deployments, protection jobs, and API-key storage with row-level security. The dashboard uses Supabase Auth and reads/writes projects for the signed-in user. If Supabase variables are missing, the app shows a setup message instead of pretending that accounts or projects were saved.
 
 ## mopsfl integration
 
@@ -31,7 +31,7 @@ The public API collection documents the GoofyLuaUglifier endpoint:
 POST https://goofyluauglifier.mopsfl.de/v1/api/uglify/{method}
 ```
 
-Send Lua source as the raw request body and JSON protection settings in the `uglifier-options` header. Keep any API key server-side; do not expose it in client code. The best next step is a Next.js route handler that validates the signed-in user, creates a `protection_jobs` row, calls mopsfl, saves the returned protected code, and updates the project.
+Send Lua source as the raw request body and JSON protection settings in the `uglifier-options` header. Keep any API key server-side; do not expose it in client code. The `/api/protect` route validates the signed-in user, calls mopsfl server-side, and returns protected output. Add a project id to persist protection jobs and protected code as you expand the pipeline.
 
 The “stop bypassing” feature should be implemented as an authorization and integrity layer for scripts you own: signed releases, environment checks, deployment revocation, and telemetry. Do not rely on client-side obfuscation alone for secrets or access control.
 
