@@ -161,7 +161,7 @@ function LandingPage({ onLogin, onSignup }: { onLogin: () => void; onSignup: () 
         </div>
       </nav>
       <section className="jnkie-hero">
-        <div className="jnkie-orb jnk ie-orb-left" />
+        <div className="jnkie-orb jnkie-orb-left" />
         <div className="jnkie-orb jnkie-orb-right" />
         <div className="jnkie-badge"><span /> PRODUCTION-READY</div>
         <h1>Enterprise Script<br /><span>Protection Platform</span></h1>
