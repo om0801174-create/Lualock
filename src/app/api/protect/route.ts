@@ -1,43 +1,44 @@
 import { NextResponse } from "next/server";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
-const MOPSFL_ENDPOINT = "https://goofyluauglifier.mopsfl.de/v1/api/uglify";
-const ALLOWED_METHODS = new Set(["bytestrings", "bytestrings,transformnums,minify"]);
-const DEFAULT_OPTIONS = { minify_output: true, ignore_bytestring: true, byte_string_type: "Decimal", byte_encrypt_all_constants: true, target_lua_version: "5.3" };
+const MOPSFL_NEW_SCRIPT_ENDPOINT = "https://api.luaobfuscator.com/v1/obfuscator/newscript";
+const MOPSFL_OBFUSCATE_ENDPOINT = "https://api.luaobfuscator.com/v1/obfuscator/obfuscate";
 
 export async function POST(request: Request) {
   const supabase = await getSupabaseServerClient();
   if (!supabase) return NextResponse.json({ error: "Supabase is not configured." }, { status: 503 });
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "You must be signed in." }, { status: 401 });
+
   const body = await request.json().catch(() => null);
   const projectId = typeof body?.projectId === "string" ? body.projectId : "";
   const source = typeof body?.source === "string" ? body.source : "";
-  const requestedMethod = typeof body?.method === "string" ? body.method.trim() : "";
-  const method = ALLOWED_METHODS.has(requestedMethod) ? requestedMethod : "bytestrings";
-  const options = body?.options && typeof body.options === "object" ? { ...DEFAULT_OPTIONS, ...body.options } : DEFAULT_OPTIONS;
   if (!projectId || !source.trim()) return NextResponse.json({ error: "Project and source code are required." }, { status: 400 });
+
   const { data: project } = await supabase.from("projects").select("id").eq("id", projectId).eq("owner_id", user.id).maybeSingle();
   if (!project) return NextResponse.json({ error: "Project not found." }, { status: 404 });
-  const { data: job, error: jobError } = await supabase.from("protection_jobs").insert({ project_id: projectId, owner_id: user.id, provider: "mopsfl", method, options, status: "processing" }).select("id").single();
+  const { data: job, error: jobError } = await supabase.from("protection_jobs").insert({ project_id: projectId, owner_id: user.id, provider: "mopsfl", method: "MinifyAll", options: { MinifyAll: true }, status: "processing" }).select("id").single();
   if (jobError) return NextResponse.json({ error: jobError.message }, { status: 500 });
+
   try {
-    const headers: HeadersInit = { "content-type": "text/plain", "origin": "https://mopsfl.de", "referer": "https://mopsfl.de/GoofyLuaUglifier/", "uglifier-options": JSON.stringify(options) };
-    if (process.env.MOPSFL_API_KEY) headers["api-key"] = process.env.MOPSFL_API_KEY;
-    const response = await fetch(`${MOPSFL_ENDPOINT}/${method}`, { method: "POST", headers, body: source, cache: "no-store" });
-    const rawResponse = (await response.text()).trim();
-    const protectedCode = rawResponse;
-    if (!response.ok) {
-      const providerUnavailable = rawResponse.includes("Cannot POST") || rawResponse.startsWith("<!DOCTYPE html");
-      throw new Error(providerUnavailable ? "Mopsfl rejected this obfuscation method. Its public API is currently unavailable or has changed." : rawResponse || `mopsfl returned ${response.status}`);
-    }
-    if (!protectedCode || protectedCode.startsWith("<!DOCTYPE html") || protectedCode.includes("Cannot POST")) throw new Error("Mopsfl returned an invalid response.");
+    const apiKey = process.env.MOPSFL_API_KEY;
+    if (!apiKey) throw new Error("MOPSFL_API_KEY is not configured on the server.");
+    const authHeaders = { "content-type": "application/json", apikey: apiKey };
+    const sessionResponse = await fetch(MOPSFL_NEW_SCRIPT_ENDPOINT, { method: "POST", headers: authHeaders, body: source, cache: "no-store" });
+    const sessionData = await sessionResponse.json().catch(() => null);
+    if (!sessionResponse.ok || !sessionData?.sessionId) throw new Error(sessionData?.message || `Mopsfl session request failed (${sessionResponse.status}).`);
+    const obfuscateResponse = await fetch(MOPSFL_OBFUSCATE_ENDPOINT, { method: "POST", headers: { ...authHeaders, sessionId: sessionData.sessionId }, body: JSON.stringify({ MinifyAll: true }), cache: "no-store" });
+    const result = await obfuscateResponse.json().catch(() => null);
+    if (!obfuscateResponse.ok || !result?.code) throw new Error(result?.message || `Mopsfl obfuscation failed (${obfuscateResponse.status}).`);
+    const protectedCode = String(result.code);
+    const options = { MinifyAll: true };
     const { error: updateError } = await supabase.from("projects").update({ source_code: source, protected_code: protectedCode, status: "Protected", protection_options: options }).eq("id", projectId).eq("owner_id", user.id);
     if (updateError) throw new Error(updateError.message);
     await supabase.from("protection_jobs").update({ status: "completed", completed_at: new Date().toISOString() }).eq("id", job.id).eq("owner_id", user.id);
-    return NextResponse.json({ protectedCode, source, method, jobId: job.id });
+    return NextResponse.json({ protectedCode, source, method: "MinifyAll", jobId: job.id });
   } catch (error) {
-    await supabase.from("protection_jobs").update({ status: "failed", error_message: error instanceof Error ? error.message : "Protection failed" }).eq("id", job.id).eq("owner_id", user.id);
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Protection failed" }, { status: 502 });
+    const message = error instanceof Error ? error.message : "Protection failed";
+    await supabase.from("protection_jobs").update({ status: "failed", error_message: message }).eq("id", job.id).eq("owner_id", user.id);
+    return NextResponse.json({ error: message }, { status: 502 });
   }
 }
