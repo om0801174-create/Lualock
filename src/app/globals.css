@@ -343,3 +343,7 @@ html, body { overflow-x: hidden; }
   .content-wrap { max-width: 1500px; padding-left: clamp(28px, 3vw, 52px); padding-right: clamp(28px, 3vw, 52px); }
   .jnkie-nav, .jnkie-hero, .feature-section, .developer-section, .landing-footer { max-width: 1420px; }
 }
+
+@media (min-width: 901px) {
+  .content-wrap { max-width: 1600px; padding-left: clamp(34px, 3.5vw, 64px); padding-right: clamp(34px, 3.5vw, 64px); }
+}

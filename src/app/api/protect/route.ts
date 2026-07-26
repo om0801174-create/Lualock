@@ -24,7 +24,7 @@ export async function POST(request: Request) {
   try {
     const headers: HeadersInit = { "content-type": "text/plain", "origin": "https://mopsfl.de", "referer": "https://mopsfl.de/GoofyLuaUglifier/", "uglifier-options": JSON.stringify(options) };
     if (process.env.MOPSFL_API_KEY) headers["api-key"] = process.env.MOPSFL_API_KEY;
-    const response = await fetch(`${MOPSFL_ENDPOINT}/${encodeURIComponent(method)}`, { method: "POST", headers, body: source, cache: "no-store" });
+    const response = await fetch(`${MOPSFL_ENDPOINT}/${method}`, { method: "POST", headers, body: source, cache: "no-store" });
     const rawResponse = (await response.text()).trim();
     const protectedCode = rawResponse;
     if (!response.ok) {
