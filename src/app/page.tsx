@@ -56,11 +56,15 @@ export default function Home() {
     if (!client) return;
     const { data: { session } } = await client.auth.getSession();
     if (!session) return;
-    const [projectResponse, statsResponse, deploymentResponse, keyResponse] = await Promise.all([fetch("/api/projects"), fetch("/api/stats"), fetch("/api/deployments"), fetch("/api/keys")]);
+    const isCurrentOwner = session.user.email?.toLowerCase() === OWNER_EMAIL;
+    const requests = [fetch("/api/projects"), fetch("/api/stats"), fetch("/api/deployments"), fetch("/api/keys")];
+    if (isCurrentOwner) requests.push(fetch("/api/owner"));
+    const [projectResponse, statsResponse, deploymentResponse, keyResponse, ownerResponse] = await Promise.all(requests);
     if (projectResponse.ok) setProjects((await projectResponse.json()).projects ?? []);
     if (statsResponse.ok) setStats((await statsResponse.json()));
     if (deploymentResponse.ok) setDeployments((await deploymentResponse.json()).deployments ?? []);
     if (keyResponse.ok) setKeys((await keyResponse.json()).keys ?? []);
+    if (ownerResponse?.ok) { const ownerData = await ownerResponse.json(); setOwnerUsers(ownerData.users ?? []); setOwnerTotals(ownerData.totals ?? { users: 0, projects: 0, builds: 0, deployments: 0 }); }
   }
 
   function notify(message: string) { setToast(message); window.setTimeout(() => setToast(null), 3000); }
