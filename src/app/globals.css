@@ -262,3 +262,19 @@ html, body { overflow-x: hidden; }
   .owner-nav-section button { justify-content: center; padding: 8px 4px; }
   .owner-nav-section button span { display: none; }
 }
+
+/* Desktop sidebar visibility and safe navigation layout */
+@media (min-width: 621px) {
+  .sidebar { position: fixed; inset: 0 auto 0 0; display: flex; width: 226px; height: 100vh; overflow-y: auto; }
+  .main-content { margin-left: 226px; width: calc(100% - 226px); }
+  .side-nav { display: flex; flex-direction: column; gap: 4px; }
+  .side-nav .nav-item, .owner-nav-section button { display: flex; width: 100%; min-height: 38px; align-items: center; }
+  .owner-nav-section { display: block; }
+}
+@media (min-width: 621px) and (max-width: 900px) {
+  .sidebar { width: 190px; }
+  .main-content { margin-left: 190px; width: calc(100% - 190px); }
+}
+.quick-action, .quick-action span, .quick-action strong, .quick-action small, .panel-head, .panel-head > div { min-width: 0; max-width: 100%; }
+.quick-action strong, .quick-action small { display: block; overflow-wrap: anywhere; word-break: break-word; white-space: normal; }
+.quick-action { overflow: hidden; }
