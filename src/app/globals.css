@@ -172,7 +172,9 @@ button { color: inherit; border: 0; cursor: pointer; }
 .owner-grid > div { padding: 15px; border: 1px solid #29364c; border-radius: 8px; background: rgba(29, 43, 68, .28); }
 .owner-grid p { margin-top: 8px; color: #9aa8bd; font-size: 11px; line-height: 1.55; }
 @media (max-width: 640px) {
-  .owner-nav-section { display: none; }
+  .owner-nav-section { display: block; position: absolute; right: 0; bottom: 64px; left: 0; padding: 8px 10px; border-top: 1px solid #283247; background: rgba(13, 17, 24, .98); }
+  .owner-nav-section .owner-nav-label { display: none; }
+  .owner-nav-section button { justify-content: center; }
   .project-line-actions { align-items: flex-start; flex-wrap: wrap; }
   .project-line-actions .line-actions { flex: 1 1 100%; max-width: none; justify-content: flex-start; margin-left: 42px; }
   .owner-grid { grid-template-columns: 1fr; padding: 14px; }
@@ -182,3 +184,13 @@ button { color: inherit; border: 0; cursor: pointer; }
   .panel-head { gap: 10px; }
   .panel-head h2 { font-size: 15px; }
 }
+
+/* Sidebar and typography correction */
+.sidebar { position: fixed; inset: 0 auto 0 0; z-index: 20; width: 226px; height: 100vh; overflow-y: auto; }
+.main-content { margin-left: 226px; width: calc(100% - 226px); }
+.page-heading h1 { max-width: 100%; font-size: clamp(22px, 2.1vw, 30px); line-height: 1.1; }
+.page-heading p, .panel p, .panel small, .panel strong, .project-line strong, .project-line small, .table-row strong, .table-row small { max-width: 100%; overflow-wrap: anywhere; word-break: break-word; }
+.panel-head h2 { font-size: clamp(14px, 1.35vw, 17px); line-height: 1.2; }
+.stat-card strong { font-size: clamp(18px, 2vw, 25px); }
+@media (max-width: 900px) and (min-width: 641px) { .sidebar { width: 190px; } .main-content { margin-left: 190px; width: calc(100% - 190px); } }
+@media (max-width: 640px) { .sidebar { position: fixed; inset: auto 0 0; width: 100%; height: 64px; overflow: visible; } .main-content { margin-left: 0; width: 100%; } .page-heading h1 { font-size: 24px; } .panel-head h2 { font-size: 14px; } .stat-card strong { font-size: 18px; } }
