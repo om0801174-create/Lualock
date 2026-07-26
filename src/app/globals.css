@@ -147,3 +147,38 @@ button { color: inherit; border: 0; cursor: pointer; }
   .modal-backdrop { align-items: center; padding: 10px; }
   .modal-card { max-height: calc(100dvh - 20px); padding: 17px; border-radius: 12px; }
 }
+
+/* Final dashboard layout and overflow fixes */
+.dashboard, .app-shell, .main-content, .content-wrap, .panel, .project-line, .table-row, .settings-row, .owner-grid, .overview-grid, .obfuscator-grid, .page-heading, .panel-head { min-width: 0; }
+.main-content { overflow-x: hidden; }
+.page-heading > div, .panel-head > div, .project-line > span, .table-row > span, .settings-row > span, .owner-grid > div { min-width: 0; }
+.page-heading h1, .page-heading p, .panel h2, .panel p, .panel strong, .panel small, .project-line strong, .project-line small, .table-row strong, .table-row small, .owner-panel p, .owner-panel strong { overflow-wrap: anywhere; word-break: break-word; }
+.project-line > span:nth-child(2), .table-row > span:nth-child(2), .settings-row > span:nth-child(2) { flex: 1 1 auto; overflow: hidden; }
+.project-line > span:nth-child(2) > *, .table-row > span:nth-child(2) > *, .settings-row > span:nth-child(2) > * { display: block; max-width: 100%; overflow-wrap: anywhere; }
+.project-line-actions { display: flex; align-items: center; gap: 12px; padding: 13px 17px; }
+.project-line-actions .line-actions { display: flex; flex: 0 0 auto; flex-wrap: wrap; justify-content: flex-end; gap: 7px; max-width: 42%; }
+.owner-nav-section { margin-top: 22px; padding-top: 15px; border-top: 1px solid #283247; }
+.owner-nav-label { display: block; padding: 0 10px 8px; color: #7385a7; font-size: 9px; font-weight: 700; letter-spacing: .14em; }
+.owner-nav-section button { display: flex; align-items: center; width: 100%; gap: 11px; padding: 9px 10px; border-radius: 6px; color: #a9b8d5; background: transparent; font-size: 12px; text-align: left; }
+.owner-nav-section button:hover, .owner-nav-section button.active { color: #dbe7ff; background: rgba(124, 168, 255, .14); }
+.owner-nav-section button.active { box-shadow: inset 2px 0 #8bb4ff; }
+.owner-nav-section button svg { color: #9bbcff; }
+.owner-panel { padding-bottom: 20px; }
+.owner-banner { display: flex; align-items: center; gap: 12px; padding: 18px 20px; border-bottom: 1px solid #283247; }
+.owner-banner > span:last-child { min-width: 0; }
+.owner-banner strong, .owner-banner small { display: block; overflow-wrap: anywhere; }
+.owner-banner small { margin-top: 4px; color: #91a0b8; font-size: 10px; }
+.owner-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 18px 20px 0; }
+.owner-grid > div { padding: 15px; border: 1px solid #29364c; border-radius: 8px; background: rgba(29, 43, 68, .28); }
+.owner-grid p { margin-top: 8px; color: #9aa8bd; font-size: 11px; line-height: 1.55; }
+@media (max-width: 640px) {
+  .owner-nav-section { display: none; }
+  .project-line-actions { align-items: flex-start; flex-wrap: wrap; }
+  .project-line-actions .line-actions { flex: 1 1 100%; max-width: none; justify-content: flex-start; margin-left: 42px; }
+  .owner-grid { grid-template-columns: 1fr; padding: 14px; }
+  .owner-banner { padding: 15px; }
+  .page-heading > div { width: 100%; }
+  .page-heading .primary-button { max-width: 100%; }
+  .panel-head { gap: 10px; }
+  .panel-head h2 { font-size: 15px; }
+}
