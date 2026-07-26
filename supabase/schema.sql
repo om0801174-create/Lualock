@@ -28,7 +28,7 @@ create table if not exists public.protection_jobs (
   id uuid primary key default gen_random_uuid(),
   project_id uuid references public.projects(id) on delete set null,
   owner_id uuid not null references auth.users(id) on delete cascade,
-  provider text not null default 'mopsfl',
+  provider text not null default 'nova',
   method text not null,
   options jsonb not null default '{}'::jsonb,
   status text not null default 'queued',
