@@ -293,3 +293,44 @@ html, body { overflow-x: hidden; }
   .topbar { padding: 12px 14px; }
   .content-wrap { padding: 16px 12px 28px; }
 }
+
+.sidebar-toggle {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  padding: 8px 10px;
+  border: 1px solid #2b3950;
+  border-radius: 7px;
+  background: #141d2b;
+  color: #aebed8;
+  font: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+.sidebar-toggle:hover { border-color: #7598cf; color: #edf4ff; background: #1a2638; }
+.sidebar-collapsed { width: 72px !important; padding-left: 9px !important; padding-right: 9px !important; }
+.sidebar-collapsed .brand { justify-content: center; }
+.sidebar-collapsed .brand > span:not(.brand-mark),
+.sidebar-collapsed .workspace-label,
+.sidebar-collapsed .sidebar-toggle span,
+.sidebar-collapsed .nav-item span,
+.sidebar-collapsed .owner-nav-label,
+.sidebar-collapsed .owner-nav-section button span,
+.sidebar-collapsed .user-card > span:not(.avatar),
+.sidebar-collapsed .user-card > svg,
+.sidebar-collapsed .signout-button { display: none; }
+.sidebar-collapsed .sidebar-toggle { justify-content: center; padding: 8px 4px; }
+.sidebar-collapsed .nav-item,
+.sidebar-collapsed .owner-nav-section button { justify-content: center; padding-left: 4px; padding-right: 4px; }
+.sidebar-collapsed + .main-content { margin-left: 72px; width: calc(100% - 72px); }
+
+@media (max-width: 620px) {
+  .sidebar-toggle { margin-bottom: 12px; padding: 7px 6px; justify-content: center; }
+  .sidebar-toggle span { display: none; }
+  .sidebar-collapsed { width: 58px !important; padding-left: 6px !important; padding-right: 6px !important; }
+  .sidebar-collapsed .brand { padding-bottom: 14px; }
+  .sidebar-collapsed .sidebar-toggle { padding: 7px 4px; }
+  .sidebar-collapsed + .main-content { margin-left: 58px; width: calc(100% - 58px); }
+}
