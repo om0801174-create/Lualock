@@ -25,9 +25,13 @@ export async function POST(request: Request) {
     const headers: HeadersInit = { "content-type": "text/plain", "origin": "https://mopsfl.de", "referer": "https://mopsfl.de/GoofyLuaUglifier/", "uglifier-options": JSON.stringify(options) };
     if (process.env.MOPSFL_API_KEY) headers["api-key"] = process.env.MOPSFL_API_KEY;
     const response = await fetch(`${MOPSFL_ENDPOINT}/${encodeURIComponent(method)}`, { method: "POST", headers, body: source, cache: "no-store" });
-    const protectedCode = (await response.text()).trim();
-    if (!response.ok) throw new Error(protectedCode || `mopsfl returned ${response.status}`);
-    if (!protectedCode || protectedCode.startsWith("<!DOCTYPE html") || protectedCode.includes("Cannot POST")) throw new Error("mopsfl returned an invalid response. The public API may be unavailable or the method is not accepted.");
+    const rawResponse = (await response.text()).trim();
+    const protectedCode = rawResponse;
+    if (!response.ok) {
+      const providerUnavailable = rawResponse.includes("Cannot POST") || rawResponse.startsWith("<!DOCTYPE html");
+      throw new Error(providerUnavailable ? "Mopsfl rejected this obfuscation method. Its public API is currently unavailable or has changed." : rawResponse || `mopsfl returned ${response.status}`);
+    }
+    if (!protectedCode || protectedCode.startsWith("<!DOCTYPE html") || protectedCode.includes("Cannot POST")) throw new Error("Mopsfl returned an invalid response.");
     const { error: updateError } = await supabase.from("projects").update({ source_code: source, protected_code: protectedCode, status: "Protected", protection_options: options }).eq("id", projectId).eq("owner_id", user.id);
     if (updateError) throw new Error(updateError.message);
     await supabase.from("protection_jobs").update({ status: "completed", completed_at: new Date().toISOString() }).eq("id", job.id).eq("owner_id", user.id);
