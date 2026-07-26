@@ -243,3 +243,22 @@ html, body { overflow-x: hidden; }
   .project-line .language, .project-line .badge, .table-row .badge, .table-row time { margin-left: 30px; }
   .owner-actions { width: 100%; padding-left: 30px; justify-content: flex-start; }
 }
+
+/* Keep sidebar tabs stacked vertically and prevent label collisions. */
+.side-nav { display: flex; flex-direction: column; align-items: stretch; gap: 4px; width: 100%; }
+.side-nav .nav-item { display: flex; width: 100%; min-height: 36px; flex: 0 0 auto; align-items: center; justify-content: flex-start; white-space: nowrap; }
+.side-nav .nav-item span:not(.nav-count) { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.owner-nav-section { flex: 0 0 auto; }
+.owner-nav-section button { white-space: nowrap; overflow: hidden; }
+.owner-nav-section button span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 620px) {
+  .sidebar { width: 68px; }
+  .main-content { margin-left: 68px; width: calc(100% - 68px); }
+  .side-nav { gap: 4px; }
+  .side-nav .nav-item { min-height: 42px; justify-content: center; padding: 8px 4px; }
+  .side-nav .nav-item span:not(.nav-count) { display: none; }
+  .owner-nav-section { display: block; margin-top: 14px; padding-top: 10px; }
+  .owner-nav-label { display: none; }
+  .owner-nav-section button { justify-content: center; padding: 8px 4px; }
+  .owner-nav-section button span { display: none; }
+}
