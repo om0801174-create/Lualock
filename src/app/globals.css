@@ -219,11 +219,14 @@ html, body { overflow-x: hidden; }
 }
 
 @media (max-width: 620px) {
-  .sidebar { width: 68px; padding: 14px 8px; }
-  .sidebar .brand > span:not(.brand-mark), .workspace-label, .side-nav button span, .owner-nav-section:not(.owner-nav-mobile), .user-card > span:not(.avatar), .user-card > svg, .signout-button { display: none; }
-  .brand { justify-content: center; }
-  .side-nav button { justify-content: center; padding: 11px 0; }
-  .main-content { margin-left: 68px; width: calc(100% - 68px); }
+  .sidebar { position: fixed; inset: auto 0 0; width: 100%; height: 72px; padding: 0; overflow: hidden; border-top: 1px solid #252e3d; border-right: 0; background: rgba(13, 17, 24, .98); }
+  .sidebar .brand, .sidebar .workspace-label, .sidebar .side-spacer, .sidebar .user-card, .sidebar .signout-button, .owner-nav-section { display: none; }
+  .side-nav { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); width: 100%; height: 72px; gap: 0; }
+  .side-nav .nav-item { display: grid; grid-template-rows: 22px 18px; place-items: center; gap: 2px; min-height: 72px; padding: 9px 2px 7px; border-radius: 0; font-size: 9px; }
+  .side-nav .nav-item span:not(.nav-count) { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .side-nav .nav-item.active { box-shadow: inset 0 2px #7ca8ff; }
+  .nav-count { display: none; }
+  .main-content { margin-left: 0; width: 100%; padding-bottom: 72px; }
   .topbar { padding: 12px 16px; }
   .topbar-actions { font-size: 10px; }
   .content-wrap { padding: 16px 12px 28px; }
@@ -252,15 +255,8 @@ html, body { overflow-x: hidden; }
 .owner-nav-section button { white-space: nowrap; overflow: hidden; }
 .owner-nav-section button span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 620px) {
-  .sidebar { width: 68px; }
-  .main-content { margin-left: 68px; width: calc(100% - 68px); }
-  .side-nav { gap: 4px; }
-  .side-nav .nav-item { min-height: 42px; justify-content: center; padding: 8px 4px; }
-  .side-nav .nav-item span:not(.nav-count) { display: none; }
-  .owner-nav-section { display: block; margin-top: 14px; padding-top: 10px; }
-  .owner-nav-label { display: none; }
-  .owner-nav-section button { justify-content: center; padding: 8px 4px; }
-  .owner-nav-section button span { display: none; }
+  .sidebar { width: 100%; }
+  .main-content { margin-left: 0; width: 100%; }
 }
 
 /* Desktop sidebar visibility and safe navigation layout */
